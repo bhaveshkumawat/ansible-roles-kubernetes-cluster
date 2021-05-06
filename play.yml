@@ -1,0 +1,12 @@
+- name: "Configuring k8s master"
+  hosts: k8s_M
+  roles:
+          - k8sMaster
+- name: "Configuring k8s slave"
+  hosts: k8s_S
+  vars_prompt:
+          - name: cmmnd
+            prompt: "enter command to join"
+            private: no
+  roles:
+          - k8sSlave
