@@ -1,0 +1,58 @@
+---
+# tasks file for k8sSlave
+                - name: installing docker
+                  package:
+                          name: "docker"
+                          state: present
+                - name: starting docker services
+                  service:
+                          name: docker
+                          state: started
+                          enabled: yes
+       
+                - name: "Configuring yum for kubernetes"
+                  copy: 
+                          src: kubernetes.repo
+                          dest: /etc/yum.repos.d/kubernetes.repo 
+             
+                - name: "installing kubeadm Kubelet and Kubectl"
+                  package:
+                           name: "kubeadm"
+                           state: present
+
+                - name: "Starting services of kubelet"
+                  service:
+                           name: kubelet
+                           state: started
+                           enabled: yes
+                  
+
+                - name: "Changing the driver for docker to systemd"
+                  copy:
+                           dest: /etc/docker/daemon.json
+                           content: '{
+                                     "exec-opts": ["native.cgroupdriver=systemd"]
+                                     }'
+
+                - name: "Restarting services of docker"
+                  service:
+                           name: "docker"
+                           state: restarted
+                           enabled: yes
+                       
+                - name: "Installing iproute-tc"
+                  package:
+                           name: "iproute-tc"
+                           state: present
+
+                - name: "updating routing tables for K8s"
+                  copy: 
+                           dest: "/etc/sysctl.d/k8s.conf"
+                           content: "net.bridge.bridge-nf-call-ip6tables = 1\n
+                                     net.bridge.bridge-nf-call-iptables = 1" 
+
+                - name: "Refreshing system after change in conf file"
+                  shell: "sysctl --system"
+
+                - name : "Connecting to Master...."
+                  shell : "{{cmmnd}}"                 
